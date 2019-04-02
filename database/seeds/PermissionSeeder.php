@@ -5,17 +5,18 @@ namespace MorningTrain\Laravel\Permissions\Database\Seeds;
 use Illuminate\Database\Seeder;
 use MorningTrain\Laravel\Resources\ResourceRepository;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\PermissionRegistrar;
 
 class PermissionSeeder extends Seeder
 {
     public function run()
     {
-        // Reset cached roles and permissions
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        foreach (ResourceRepository::getAllPermissions() as $name) {
+            $permission = Permission::create(['name' => $name]);
+            $roles      = config('permissions.permission_roles', [])[$name] ?? [];
 
-        foreach (ResourceRepository::getAllPermissions() as $permission) {
-            Permission::create(['name' => $permission]);
+            if (!empty($roles)) {
+                $permission->syncRoles($roles);
+            }
         }
     }
 }

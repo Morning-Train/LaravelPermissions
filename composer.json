@@ -12,13 +12,22 @@
     ],
     "autoload": {
         "psr-4": {
+            "MorningTrain\\Laravel\\Permissions\\": "src/",
             "MorningTrain\\Laravel\\Permissions\\Database\\Seeds\\": "database/seeds/"
         }
     },
     "require": {
         "php": ">=7.1",
+        "illuminate/support": "^5.8",
         "illuminate/database": "^5.8",
         "spatie/laravel-permission": "^2.36",
         "morningtrain/laravel-resources": "^1.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "MorningTrain\\Laravel\\Permissions\\LaravelPermissionsServiceProvider"
+            ]
+        }
     }
 }

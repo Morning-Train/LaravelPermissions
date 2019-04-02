@@ -1,6 +1,6 @@
 <?php
 
-namespace MorningTrain\Laravel\Resources\Database\Seeds;
+namespace MorningTrain\Laravel\Permissions\Database\Seeds;
 
 use Illuminate\Database\Seeder;
 use MorningTrain\Laravel\Resources\ResourceRepository;

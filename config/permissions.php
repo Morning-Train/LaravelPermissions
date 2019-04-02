@@ -32,7 +32,7 @@ return [
     */
 
     'super_admin' => [
-        'admin'
+        'admin',
     ],
 
 
@@ -49,7 +49,7 @@ return [
 
         // Example permission
         'user.update' => [
-            'user'
+            'user',
         ],
     ],
 ];

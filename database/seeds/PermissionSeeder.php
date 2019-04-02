@@ -11,15 +11,10 @@ class PermissionSeeder extends Seeder
 {
     public function run()
     {
-        $this->seedPermissions(ResourceRepository::getAllPermissions());
-    }
-
-    protected function seedPermissions(array $permissions)
-    {
         // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        foreach ($permissions as $permission) {
+        foreach (ResourceRepository::getAllPermissions() as $permission) {
             Permission::create(['name' => $permission]);
         }
     }

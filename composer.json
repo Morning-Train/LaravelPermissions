@@ -1,0 +1,24 @@
+{
+    "name": "morningtrain/laravel-permissions",
+    "description": "Permissions setup and config",
+    "type": "library",
+    "license": "GPL-3.0-only",
+    "authors": [
+        {
+            "name": "Morningtrain",
+            "email": "mail@morningtrain.dk",
+            "homepage": "https://morningtrain.dk/"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "MorningTrain\\Laravel\\Permissions\\Database\\Seeds\\": "database/seeds/"
+        }
+    },
+    "require": {
+        "php": ">=7.1",
+        "illuminate/database": "^5.8",
+        "spatie/laravel-permission": "^2.36",
+        "morningtrain/laravel-resources": "^1.0"
+    }
+}

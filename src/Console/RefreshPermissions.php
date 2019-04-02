@@ -24,6 +24,8 @@ class RefreshPermissions extends Command
 
     public function handle()
     {
+        $this->call('mt:refresh-roles');
+
         $this->info('Refreshing application permissions.');
 
         $this->deleteDeprecated();

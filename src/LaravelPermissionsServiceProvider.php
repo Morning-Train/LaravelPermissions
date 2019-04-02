@@ -6,6 +6,7 @@ namespace MorningTrain\Laravel\Permissions;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use MorningTrain\Laravel\Permissions\Console\RefreshPermissions;
+use MorningTrain\Laravel\Permissions\Console\RefreshRoles;
 
 class LaravelPermissionsServiceProvider extends ServiceProvider
 {
@@ -39,6 +40,7 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
         // Register commands
         if ($this->app->runningInConsole()) {
             $this->commands([
+                RefreshRoles::class,
                 RefreshPermissions::class,
             ]);
         }

@@ -12,6 +12,7 @@ class PermissionServiceProvider extends SpatiePermissionProvider
 {
     public function boot(SpatiePermissionRegistrar $permissionLoader, Filesystem $filesystem)
     {
+        // Here we "hack" our way into overriding the Spatie PermissionRegistrar
         parent::boot(app()->make(PermissionRegistrar::class), $filesystem);
     }
 

@@ -47,9 +47,22 @@ return [
 
     'permission_roles' => [
 
-        // Example permission
-        'user.update' => [
+        // Permission example
+        'article_read' => [
             'user',
+        ],
+        'article_update' => [
+            'user',
+        ],
+
+        // Permission example
+        'article' => [
+            'read' => [
+                'user'
+            ],
+            'update' => [
+                'user'
+            ],
         ],
     ],
 ];

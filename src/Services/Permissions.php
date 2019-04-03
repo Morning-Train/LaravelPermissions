@@ -25,6 +25,19 @@ class Permissions
             $model->hasRole(config('permissions.super_admin'));
     }
 
+    public function getUserPermissions($user)
+    {
+        // Check if $user HasPermissions
+        if (!is_object($user) || !method_exists($user, 'getAllPermissions')) {
+            return;
+        }
+
+        // Return all permissions if super-admin
+        return $this->isSuperAdmin($user) ?
+            ResourceRepository::getAllPermissions() :
+            $user->getAllPermissions()->pluck('name')->all();
+    }
+
     public function export()
     {
         Context::localization()->provide('env',
@@ -33,20 +46,8 @@ class Permissions
                     return;
                 }
 
-                $user = Auth::user();
-
-                // Check if $user HasPermissions
-                if (!method_exists($user, 'getAllPermissions')) {
-                    return;
-                }
-
-                // Export all permissions if super-admin
-                $permissions = $this->isSuperAdmin($user) ?
-                    ResourceRepository::getAllPermissions() :
-                    $user->getAllPermissions()->pluck('name')->all();
-
                 return [
-                    'user_permissions' => $permissions,
+                    'user_permissions' => $this->getUserPermissions(Auth::user()),
                 ];
             });
     }

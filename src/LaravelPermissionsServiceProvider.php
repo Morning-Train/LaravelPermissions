@@ -17,12 +17,10 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__ . '/../config/permissions.php' => config_path('permissions.php'),
-            ],
-                'laravel-permissions-config');
-        }
+        $this->mergeConfigFrom(
+            __DIR__ . '/../config/permissions.php',
+            'permissions'
+        );
     }
 
     /**
@@ -32,13 +30,11 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->mergeConfigFrom(
-            __DIR__ . '/../config/permissions.php',
-            'permissions'
-        );
-
-        // Register commands
         if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__ . '/../config/permissions.php' => config_path('permissions.php'),
+            ], 'laravel-permissions-config');
+
             $this->commands([
                 RefreshRoles::class,
                 RefreshPermissions::class,

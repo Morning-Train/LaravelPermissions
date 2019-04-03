@@ -13,7 +13,7 @@ abstract class PermissionPolicy
         $operation = array_pop($parts);
 
         if (is_callable([$this, $operation])) {
-            call_user_func([$this, $operation], $user, $resource);
+            return call_user_func([$this, $operation], $user, $resource);
         }
     }
 }

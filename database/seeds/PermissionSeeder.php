@@ -12,7 +12,7 @@ class PermissionSeeder extends Seeder
     {
         foreach (ResourceRepository::getAllPermissions() as $name) {
             $permission = Permission::create(['name' => $name]);
-            $roles      = config('permissions.permission_roles', [])[$name] ?? [];
+            $roles      = config('permissions.permission_roles.'.$name, []) ?? [];
 
             if (!empty($roles)) {
                 $permission->syncRoles($roles);

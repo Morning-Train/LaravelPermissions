@@ -71,7 +71,7 @@ class RefreshPermissions extends Command
         $this->info('Syncing permission roles.');
 
         $existing->each(function ($permission) {
-            $roles = config('permissions.permission_roles', [])[$permission->name] ?? [];
+            $roles = config('permissions.permission_roles.'.$permission->name, []) ?? [];
             $permission->syncRoles($roles);
         });
     }

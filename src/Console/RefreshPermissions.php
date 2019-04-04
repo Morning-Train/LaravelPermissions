@@ -21,7 +21,7 @@ class RefreshPermissions extends Command
 
         $this->info('Refreshing application permissions.');
 
-        $this->target = ResourceRepository::getAllPermissions();
+        $this->target = ResourceRepository::getRestrictedOperationIdentifiers();
 
         $this->deleteDeprecated();
 

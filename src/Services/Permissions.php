@@ -34,8 +34,11 @@ class Permissions
 
         // Return all permissions if super-admin
         return $this->isSuperAdmin($user) ?
-            ResourceRepository::getAllPermissions() :
-            $user->getAllPermissions()->pluck('name')->all();
+            ResourceRepository::getOperationIdentifiers() :
+            array_merge(
+                $user->getAllPermissions()->pluck('name')->all(),
+                ResourceRepository::getUnrestrictedOperationIdentifiers()
+            );
     }
 
     public function export()

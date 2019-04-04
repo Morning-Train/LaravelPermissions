@@ -10,7 +10,7 @@ class PermissionSeeder extends Seeder
 {
     public function run()
     {
-        foreach (ResourceRepository::getAllPermissions() as $name) {
+        foreach (ResourceRepository::getRestrictedOperationIdentifiers() as $name) {
             $permission = Permission::create(['name' => $name]);
             $roles      = config('permissions.permission_roles.'.$name, []) ?? [];
 

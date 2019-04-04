@@ -12,7 +12,7 @@ abstract class PermissionPolicy
         $parts     = explode('.', $name); // TODO - This is kind of an assumption into how permission names are structured.
         $operation = array_pop($parts);
 
-        if (is_callable([$this, $operation])) {
+        if (method_exists($this, $operation)) {
             return call_user_func([$this, $operation], $user, $resource);
         }
     }

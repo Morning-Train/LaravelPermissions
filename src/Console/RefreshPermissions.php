@@ -15,18 +15,13 @@ class RefreshPermissions extends Command
     protected $description = 'Refreshes permissions';
     protected $target      = [];
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->target = ResourceRepository::getAllPermissions();
-    }
-
     public function handle()
     {
         $this->call('mt:refresh-roles');
 
         $this->info('Refreshing application permissions.');
+
+        $this->target = ResourceRepository::getAllPermissions();
 
         $this->deleteDeprecated();
 

@@ -14,16 +14,11 @@ class RefreshRoles extends Command
     protected $description = 'Refreshes roles';
     protected $target;
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->target = config('permissions.roles', []);
-    }
-
     public function handle()
     {
         $this->info('Refreshing application roles.');
+
+        $this->target = config('permissions.roles', []);
 
         $this->deleteDeprecated();
 

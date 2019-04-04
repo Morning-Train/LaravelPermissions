@@ -32,7 +32,8 @@
                 "MorningTrain\\Laravel\\Permissions\\PermissionServiceProvider"
             ],
             "aliases": {
-                "PermissionsService": "MorningTrain\\Laravel\\Permissions\\Permissions"
+                "PermissionsService": "MorningTrain\\Laravel\\Permissions\\Permissions",
+                "PermissionPolicy": "MorningTrain\\Laravel\\Permissions\\Policies\\PermissionPolicy"
             },
             "dont-discover": [
                 "spatie/laravel-permission"

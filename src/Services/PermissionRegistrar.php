@@ -35,6 +35,9 @@ class PermissionRegistrar extends SpatiePermissionRegistrar
         /// To fix that, we check if the result isn't specifically negative
         /// (if it came from a policy, or lack of general permission)
         /// And do the initial check again, this time returning any positive or negative result.
+        ///
+        /// Additionally if a permission doesn't exist, we just return true.
+        /// This allows us to omit registering non-restricted operations.
         $this->gate->after(function (Authorizable $user, string $ability, $result, $args) {
             if ($result !== false) {
                 try {
@@ -42,6 +45,7 @@ class PermissionRegistrar extends SpatiePermissionRegistrar
                         $result = $user->hasPermissionTo($ability);
                     }
                 } catch (PermissionDoesNotExist $e) {
+                    $result = true;
                 }
             }
 

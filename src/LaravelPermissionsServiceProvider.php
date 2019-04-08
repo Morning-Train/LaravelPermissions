@@ -33,7 +33,7 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../config/permissions.php' => config_path('permissions.php'),
-            ], 'config');
+            ], 'mt-config');
 
             $this->commands([
                 RefreshRoles::class,

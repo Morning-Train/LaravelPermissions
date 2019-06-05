@@ -36,7 +36,12 @@ class Permissions
         return $this->isSuperAdmin($user) ?
             ResourceRepository::getOperationIdentifiers() :
             array_merge(
-                $user->getAllPermissions()->pluck('name')->all(),
+                $user->getAllPermissions()
+                    ->pluck('name')
+                    ->reject(function ($permission) use ($user) {
+                        return !$user->can($permission);
+                    })
+                    ->all(),
                 ResourceRepository::getUnrestrictedOperationIdentifiers()
             );
     }

@@ -25,11 +25,11 @@ class Permissions
             $model->hasRole(config('permissions.super_admin'));
     }
 
-    public function getUserPermissions($user)
+    public function getUserPermissions($user = null)
     {
         // Check if $user HasPermissions
-        if (!is_object($user) || !method_exists($user, 'getAllPermissions')) {
-            return;
+        if ($user === null || !is_object($user) || !method_exists($user, 'getAllPermissions')) {
+            return ResourceRepository::getUnrestrictedOperationIdentifiers();
         }
 
         // Return all permissions if super-admin
@@ -50,10 +50,6 @@ class Permissions
     {
         Context::localization()->provide('env',
             function () {
-                if (!Auth::check()) {
-                    return;
-                }
-
                 return [
                     'user_permissions' => $this->getUserPermissions(Auth::user()),
                 ];

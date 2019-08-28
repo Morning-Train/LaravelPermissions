@@ -4,7 +4,6 @@ namespace MorningTrain\Laravel\Permissions\Console;
 
 
 use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use MorningTrain\Laravel\Resources\ResourceRepository;
 use Spatie\Permission\Models\Permission;
@@ -25,10 +24,8 @@ class RefreshPermissions extends Command
 
         $this->deleteDeprecated();
 
-        $existing = Permission::get();
-
-        $this->refreshPermissions($existing);
-        $this->syncRoles($existing);
+        $this->refreshPermissions();
+        $this->syncRoles();
 
         $this->info('Done refreshing permissions.');
     }
@@ -40,10 +37,10 @@ class RefreshPermissions extends Command
         $this->info("Deleted $deleted deprecated " . Str::plural('permission', $deleted));
     }
 
-    protected function refreshPermissions(Collection $existing)
+    protected function refreshPermissions()
     {
         // Create all new
-        $existing = $existing->pluck('name')->all();
+        $existing = Permission::query()->get()->pluck('name')->all();
         $new      = array_diff($this->target, $existing);
         $count    = count($new);
 
@@ -61,11 +58,11 @@ class RefreshPermissions extends Command
         }
     }
 
-    protected function syncRoles(Collection $existing)
+    protected function syncRoles()
     {
         $this->info('Syncing permission roles.');
 
-        $existing->each(function ($permission) {
+        Permission::query()->get()->each(function ($permission) {
             $roles = config('permissions.permission_roles.'.$permission->name, []) ?? [];
             $permission->syncRoles($roles);
         });

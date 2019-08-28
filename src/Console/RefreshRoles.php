@@ -4,7 +4,6 @@ namespace MorningTrain\Laravel\Permissions\Console;
 
 
 use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
@@ -22,9 +21,7 @@ class RefreshRoles extends Command
 
         $this->deleteDeprecated();
 
-        $existing = Role::get();
-
-        $this->refreshPermissions($existing);
+        $this->refreshPermissions();
 
         $this->info('Done refreshing roles.');
     }
@@ -36,10 +33,10 @@ class RefreshRoles extends Command
         $this->info("Deleted $deleted deprecated " . Str::plural('role', $deleted));
     }
 
-    protected function refreshPermissions(Collection $existing)
+    protected function refreshPermissions()
     {
         // Create all new
-        $existing = $existing->pluck('name')->all();
+        $existing = Role::query()->get()->pluck('name')->all();
         $new      = array_diff($this->target, $existing);
         $count    = count($new);
 

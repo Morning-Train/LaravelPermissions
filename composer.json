@@ -17,11 +17,13 @@
         }
     },
     "require": {
-        "php": ">=7.1",
-        "illuminate/console": "^5.8",
-        "illuminate/support": "^5.8",
-        "illuminate/database": "^5.8",
-        "spatie/laravel-permission": "^2.36",
+        "php": "^7.2",
+        "illuminate/console": "^5.8|^6.0",
+        "illuminate/contracts": "^5.8|^6.0",
+        "illuminate/filesystem": "^5.8|^6.0",
+        "illuminate/support": "^5.8|^6.0",
+        "illuminate/database": "^5.8|^6.0",
+        "spatie/laravel-permission": "^3.0",
         "morningtrain/laravel-context": "^1.0",
         "morningtrain/laravel-resources": "^1.0"
     },

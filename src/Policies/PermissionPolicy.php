@@ -7,7 +7,11 @@ abstract class PermissionPolicy
     public function __call($name, $args)
     {
         $user     = $args[0];
-        $resource = $args[1];
+        $resource = null;
+
+        if (isset($args[1])) {
+            $resource = $args[1];
+        }
 
         $parts     = explode('.', $name); // TODO - This is kind of an assumption into how permission names are structured.
         $operation = array_pop($parts);

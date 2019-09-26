@@ -80,16 +80,10 @@ return [
     'custom_permission_roles' => [
 
         // Permission example
-        'article_read'   => [
+        'article_read' => [
             'user',
         ],
 
-        // Permission example
-        'article' => [
-            'read' => [
-                'user',
-            ],
-        ],
     ],
 
 ];

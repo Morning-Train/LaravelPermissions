@@ -21,9 +21,9 @@ class RefreshPermissions extends Command
 
         $this->info('Refreshing application permissions.');
 
-        // All permissions which need to be reacted
+        // All permissions which need to be created
         $this->target = array_unique(array_merge(
-            array_keys(static::dot(config('permissions.custom_permission_roles', []))),
+            array_keys(config('permissions.custom_permission_roles', [])),
             ResourceRepository::getRestrictedOperationIdentifiers()
         ));
 
@@ -78,33 +78,5 @@ class RefreshPermissions extends Command
         });
     }
 
-    /**
-     * Overwritten version of Arr::dot()
-     * It wont go deeper, if none of the values are an array.
-     * Returns all keys accessible by Arr:get()
-     *
-     * @param $array
-     * @param string $prepend
-     * @return array
-     */
-    public static function dot($array, $prepend = '')
-    {
-        $results = [];
-
-        foreach ($array as $key => $value) {
-            if (is_array($value)
-                && !empty($value)
-                && collect($value)->contains(function ($values) {
-                    return is_array($values);
-                })
-            ) {
-                $results = array_merge($results, static::dot($value, $prepend . $key . '.'));
-            } else {
-                $results[$prepend . $key] = $value;
-            }
-        }
-
-        return $results;
-    }
 }
 

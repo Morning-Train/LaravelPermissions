@@ -4,6 +4,7 @@ namespace MorningTrain\Laravel\Permissions\Console;
 
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use MorningTrain\Laravel\Resources\ResourceRepository;
 use Spatie\Permission\Models\Permission;
@@ -20,7 +21,11 @@ class RefreshPermissions extends Command
 
         $this->info('Refreshing application permissions.');
 
-        $this->target = ResourceRepository::getRestrictedOperationIdentifiers();
+        // All permissions which need to be reacted
+        $this->target = array_unique(array_merge(
+            array_keys(static::dot(config('permissions.custom_permission_roles', []))),
+            ResourceRepository::getRestrictedOperationIdentifiers()
+        ));
 
         $this->deleteDeprecated();
 
@@ -62,9 +67,44 @@ class RefreshPermissions extends Command
     {
         $this->info('Syncing permission roles.');
 
-        Permission::query()->get()->each(function ($permission) {
-            $roles = config('permissions.permission_roles.'.$permission->name, []) ?? [];
+        $permissions = array_merge_recursive(
+            config('permissions.permission_roles', []),
+            config('permissions.custom_permission_roles', [])
+        );
+
+        Permission::query()->get()->each(function ($permission) use ($permissions) {
+            $roles = Arr::get($permissions, $permission->name, []);
             $permission->syncRoles($roles);
         });
     }
+
+    /**
+     * Overwritten version of Arr::dot()
+     * It wont go deeper, if none of the values are an array.
+     * Returns all keys accessible by Arr:get()
+     *
+     * @param $array
+     * @param string $prepend
+     * @return array
+     */
+    public static function dot($array, $prepend = '')
+    {
+        $results = [];
+
+        foreach ($array as $key => $value) {
+            if (is_array($value)
+                && !empty($value)
+                && collect($value)->contains(function ($values) {
+                    return is_array($values);
+                })
+            ) {
+                $results = array_merge($results, static::dot($value, $prepend . $key . '.'));
+            } else {
+                $results[$prepend . $key] = $value;
+            }
+        }
+
+        return $results;
+    }
 }
+

@@ -41,14 +41,14 @@ return [
     | Permission roles
     |--------------------------------------------------------------------------
     |
-    | List all roles you want seeded for each permission here.
+    | List all roles you want seeded for each restricted Resource permission here.
     |
     */
 
     'permission_roles' => [
 
         // Permission example
-        'article_read' => [
+        'article_read'   => [
             'user',
         ],
         'article_update' => [
@@ -56,13 +56,41 @@ return [
         ],
 
         // Permission example
-        'article' => [
-            'read' => [
-                'user'
+        'article'        => [
+            'read'   => [
+                'user',
             ],
             'update' => [
-                'user'
+                'user',
             ],
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom permission roles
+    |--------------------------------------------------------------------------
+    |
+    | Here you can define some custom permissions,
+    | Which don't need to be based on a Resource.
+    | List all roles you want seeded for each custom permission here.
+    |
+    */
+
+    'custom_permission_roles' => [
+
+        // Permission example
+        'article_read'   => [
+            'user',
+        ],
+
+        // Permission example
+        'article' => [
+            'read' => [
+                'user',
+            ],
+        ],
+    ],
+
 ];
+

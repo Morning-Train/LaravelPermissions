@@ -3,7 +3,9 @@
 namespace MorningTrain\Laravel\Permissions\Services;
 
 
+use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use MorningTrain\Laravel\Context\Context;
 use MorningTrain\Laravel\Resources\ResourceRepository;
 
@@ -60,5 +62,43 @@ class Permissions
                     'user_permissions' => $this->getUserPermissions(Auth::user()),
                 ];
             });
+    }
+
+    public function registerPolicies($policies = [])
+    {
+        foreach ($policies as $model => $policy) {
+            foreach (ResourceRepository::getModelPermissions($model) as $permission) {
+                $parts  = explode('.', $permission);
+                $method = array_pop($parts);
+
+                if (method_exists($policy, $method)) {
+                    Gate::define($permission, function (?Authorizable $user, ...$args) use ($method, $policy) {
+
+                        $params = (new \ReflectionClass($policy))
+                            ->getMethod($method)
+                            ->getParameters();
+
+                        $matches = collect($params)->every(function (\ReflectionParameter $param, $index) use ($args, $user) {
+                            if ($index === 0) {
+                                if ($user !== null) return true;
+
+                                return ($param->getClass() && $param->allowsNull()) ||
+                                    ($param->isDefaultValueAvailable() && is_null($param->getDefaultValue()));
+                            }
+
+                            if (!isset($args[$index - 1])) {
+                                return false;
+                            }
+
+                            return true;
+                        });
+
+                        return $matches ?
+                            call_user_func([app()->make($policy), $method], $user, ...$args)
+                            : null;
+                    });
+                }
+            }
+        }
     }
 }

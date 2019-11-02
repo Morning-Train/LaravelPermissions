@@ -4,7 +4,9 @@ namespace MorningTrain\Laravel\Permissions\Services;
 
 
 use Illuminate\Contracts\Auth\Access\Authorizable;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use MorningTrain\Laravel\Context\Context;
 use MorningTrain\Laravel\Resources\ResourceRepository;
@@ -31,7 +33,7 @@ class Permissions
     {
         // Check if $user HasPermissions
         if ($user === null || !is_object($user) || !method_exists($user, 'getAllPermissions')) {
-            return ResourceRepository::getUnrestrictedOperationIdentifiers();
+            return $this->getUnrestrictedOperationIdentifiers();
         }
 
         $params = ResourceRepository::getOperationPolicyParameters();
@@ -50,7 +52,7 @@ class Permissions
                             !$user->can($permission);
                     })
                     ->all(),
-                ResourceRepository::getUnrestrictedOperationIdentifiers()
+                $this->getUnrestrictedOperationIdentifiers()
             );
     }
 
@@ -101,4 +103,55 @@ class Permissions
             }
         }
     }
+
+    public function isRestricted($identifier)
+    {
+        return in_array($identifier, $this->getRestrictedOperationIdentifiers());
+    }
+
+    /**
+     * Returns a list of all restricted operation identifiers for the provided namespace
+     *
+     * @param string $namespace
+     * @return array
+     * @throws Exception
+     */
+    public function getRestrictedOperationIdentifiers(string $namespace = null)
+    {
+        $key = $namespace === null ? '' : "_{$namespace}";
+
+        return Cache::rememberForever('restricted_operations'.$key, function () use ($namespace) {
+            return $this->getFilteredOperationIdentifiers($namespace, true);
+        });
+    }
+
+    /**
+     * Returns a list of all non-restricted operation identifiers for the provided namespace
+     *
+     * @param string $namespace
+     * @return array
+     * @throws \Exception
+     */
+    public function getUnrestrictedOperationIdentifiers(string $namespace = null)
+    {
+        $key = $namespace === null ? '' : "_{$namespace}";
+
+        return Cache::rememberForever('unrestricted_operations'.$key, function () use ($namespace) {
+            return $this->getFilteredOperationIdentifiers($namespace, false);
+        });
+    }
+
+    private function getFilteredOperationIdentifiers(string $namespace = null, bool $restricted = true)
+    {
+        $permissions = config('permissions.permission_roles', []);
+
+        return ResourceRepository::getOperationIdentifiers($namespace)
+            ->filter(function ($identifier) use ($restricted, $permissions) {
+                $isRestricted = Arr::get($permissions, $identifier, null) !== null;
+
+                return $restricted ? $isRestricted : !$isRestricted;
+            })
+            ->values()->all();
+    }
+
 }

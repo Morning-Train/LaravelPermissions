@@ -6,6 +6,7 @@ namespace MorningTrain\Laravel\Permissions\Console;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use MorningTrain\Laravel\Permissions\Permissions;
 use MorningTrain\Laravel\Resources\ResourceRepository;
 use Spatie\Permission\Models\Permission;
 
@@ -24,7 +25,7 @@ class RefreshPermissions extends Command
         // All permissions which need to be created
         $this->target = array_unique(array_merge(
             array_keys(config('permissions.custom_permission_roles', [])),
-            ResourceRepository::getRestrictedOperationIdentifiers()
+            Permissions::getRestrictedOperationIdentifiers()
         ));
 
         $this->deleteDeprecated();

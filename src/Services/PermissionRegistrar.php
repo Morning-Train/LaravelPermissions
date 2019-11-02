@@ -3,7 +3,7 @@
 namespace MorningTrain\Laravel\Permissions\Services;
 
 use Illuminate\Contracts\Auth\Access\Authorizable;
-use MorningTrain\Laravel\Resources\ResourceRepository;
+use MorningTrain\Laravel\Permissions\Permissions;
 use Spatie\Permission\PermissionRegistrar as SpatiePermissionRegistrar;
 use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 
@@ -21,7 +21,7 @@ class PermissionRegistrar extends SpatiePermissionRegistrar
         /// But if they do have it, we return null, and allow the defined policies to run.
         $this->gate->before(function (?Authorizable $user, string $ability) {
             try {
-                if ($user === null && ResourceRepository::operationIdentifierIsRestricted($ability)) {
+                if ($user === null && Permissions::isRestricted($ability)) {
                     return false;
                 }
                 else if (method_exists($user, 'hasPermissionTo')) {

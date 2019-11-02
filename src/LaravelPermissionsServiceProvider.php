@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use MorningTrain\Laravel\Permissions\Console\RefreshPermissions;
 use MorningTrain\Laravel\Permissions\Console\RefreshRoles;
+use MorningTrain\Laravel\Resources\Support\Contracts\Operation;
 
 class LaravelPermissionsServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,11 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
             __DIR__ . '/../config/permissions.php',
             'permissions'
         );
+
+        Operation::macro('isRestricted', function($identifier){
+            return Permissions::isRestricted($identifier);
+        });
+
     }
 
     /**
@@ -46,6 +52,7 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
         Gate::before(function ($user, $ability) {
             return Permissions::isSuperAdmin($user) ? true : null;
         });
+
     }
 
 }

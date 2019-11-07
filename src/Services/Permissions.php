@@ -58,12 +58,11 @@ class Permissions
 
     public function export()
     {
-        Context::localization()->provide('env',
-            function () {
-                return [
-                    'user_permissions' => $this->getUserPermissions(Auth::user()),
-                ];
-            });
+        Context::env(function () {
+            return [
+                'user_permissions' => $this->getUserPermissions(Auth::user()),
+            ];
+        });
     }
 
     public function registerPolicies($policies = [])

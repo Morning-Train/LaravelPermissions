@@ -3,6 +3,7 @@
 namespace MorningTrain\Laravel\Permissions\Services;
 
 use Illuminate\Contracts\Auth\Access\Authorizable;
+use Illuminate\Contracts\Auth\Access\Gate;
 use MorningTrain\Laravel\Permissions\Permissions;
 use Spatie\Permission\PermissionRegistrar as SpatiePermissionRegistrar;
 use Spatie\Permission\Exceptions\PermissionDoesNotExist;
@@ -19,7 +20,7 @@ class PermissionRegistrar extends SpatiePermissionRegistrar
         /// In order to run further checks in model Policies.
         /// This means if the user doesn't have the general permission, we immediately reject.
         /// But if they do have it, we return null, and allow the defined policies to run.
-        $this->gate->before(function (?Authorizable $user, string $ability) {
+        app(Gate::class)->before(function (?Authorizable $user, string $ability) {
             try {
                 if ($user === null && Permissions::isRestricted($ability)) {
                     return false;
@@ -42,7 +43,7 @@ class PermissionRegistrar extends SpatiePermissionRegistrar
         ///
         /// Additionally if a permission doesn't exist, we just return true.
         /// This allows us to omit registering non-restricted operations.
-        $this->gate->after(function (?Authorizable $user, string $ability, $result, $args) {
+        app(Gate::class)->after(function (?Authorizable $user, string $ability, $result, $args) {
             if ($result !== false) {
                 try {
                     if ($user === null && $result === null) {

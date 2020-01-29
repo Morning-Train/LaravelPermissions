@@ -73,8 +73,8 @@ class RefreshPermissions extends Command
             config('permissions.custom_permission_roles', [])
         );
 
-        Permission::query()->get()->each(function ($permission) use ($permissions) {
-            $roles = Arr::get($permissions, $permission->name, []);
+        Permission::query()->get()->each(function ($permission) {
+            $roles = Permissions::findRolesForPermission($permission->name);
             $permission->syncRoles($roles);
         });
     }

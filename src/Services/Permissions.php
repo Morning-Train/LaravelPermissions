@@ -140,17 +140,104 @@ class Permissions
         });
     }
 
+    public function isMultidimensionalArray($array)
+    {
+        return count($array) !== count($array, COUNT_RECURSIVE);
+    }
+
+
+    /**
+     * Flatten a multi-dimensional associative array with dots.
+     *
+     * @param  iterable  $array
+     * @param  string  $prepend
+     * @return array
+     */
+    public function dotArrayExceptLastArray($array, $prepend = '')
+    {
+        $results = [];
+        foreach ($array as $key => $value) {
+            if (is_array($value) && ! empty($value) && $this->isMultidimensionalArray($value)) {
+                $results = array_merge($results, $this->dotArrayExceptLastArray($value, $prepend.$key.'.'));
+            } else {
+                $results[$prepend.$key] = $value;
+            }
+        }
+
+        return $results;
+    }
+
+    private function dotAndWildcardPermissions($permissions)
+    {
+        $dotted_permissions = $this->dotArrayExceptLastArray($permissions);
+
+        $permissions = array_keys($dotted_permissions);
+
+        $wildcarded_permissions = array_map(function($permission) {
+            return $permission . '*';
+        }, $permissions);
+
+        return $wildcarded_permissions;
+    }
+
     private function getFilteredOperationIdentifiers(string $namespace = null, bool $restricted = true)
     {
-        $permissions = config('permissions.permission_roles', []);
 
-        return ResourceRepository::getOperationIdentifiers($namespace)
-            ->filter(function ($identifier) use ($restricted, $permissions) {
-                $isRestricted = Arr::get($permissions, $identifier, null) !== null;
+        $permissions_from_config = config('permissions.permission_roles', []);
 
-                return $restricted ? $isRestricted : !$isRestricted;
-            })
-            ->values()->all();
+        $dotted_permissions = $this->dotArrayExceptLastArray($permissions_from_config);
+        $permissions = array_keys($dotted_permissions);
+
+        $wildcarded_permissions = array_map(function($permission) {
+            return $permission . '*';
+        }, $permissions);
+
+        $operations = ResourceRepository::getOperationIdentifiers($namespace);
+
+        $matched_operations = collect();
+
+        if (!empty($wildcarded_permissions)) {
+            foreach ($wildcarded_permissions as $wildcarded_permission) {
+
+                $matched_operations = $matched_operations->merge(
+                    $operations->filter(function ($identifier) use ($restricted, $wildcarded_permission) {
+                        $matches = fnmatch($wildcarded_permission, $identifier);
+                        return $restricted ? $matches : !$matches;
+                    })
+                );
+            }
+        }
+
+        return $matched_operations->all();
+    }
+
+    public function findRolesForPermission($identifier)
+    {
+
+        $permissions_from_config = array_merge_recursive(
+            config('permissions.permission_roles', []),
+            config('permissions.custom_permission_roles', [])
+        );
+
+        $dotted_permissions = $this->dotArrayExceptLastArray($permissions_from_config);
+        $keys = array_keys($dotted_permissions);
+
+        if(empty($keys)) {
+            return [];
+        }
+
+        $map = [];
+
+        foreach($dotted_permissions as $key => $roles) {
+            $pattern = $key.'*';
+
+            if(fnmatch($pattern, $identifier)) {
+                return $roles;
+            }
+
+        }
+
+        return [];
     }
 
 }

@@ -194,21 +194,24 @@ class Permissions
 
         $operations = ResourceRepository::getOperationIdentifiers($namespace);
 
-        $matched_operations = collect();
+        $restricted_operations = collect();
 
         if (!empty($wildcarded_permissions)) {
             foreach ($wildcarded_permissions as $wildcarded_permission) {
-
-                $matched_operations = $matched_operations->merge(
+                $restricted_operations = $restricted_operations->merge(
                     $operations->filter(function ($identifier) use ($restricted, $wildcarded_permission) {
                         $matches = fnmatch($wildcarded_permission, $identifier);
-                        return $restricted ? $matches : !$matches;
+                        return $matches;
                     })
                 );
             }
         }
 
-        return $matched_operations->all();
+        if($restricted) {
+            return $restricted_operations->unique()->sort()->values()->all();
+        }
+
+        return $operations->diff($restricted_operations)->unique()->sort()->values()->all();
     }
 
     public function findRolesForPermission($identifier)
@@ -225,8 +228,6 @@ class Permissions
         if(empty($keys)) {
             return [];
         }
-
-        $map = [];
 
         foreach($dotted_permissions as $key => $roles) {
             $pattern = $key.'*';

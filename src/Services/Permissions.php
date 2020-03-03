@@ -180,7 +180,7 @@ class Permissions
         return $wildcarded_permissions;
     }
 
-    private function getFilteredOperationIdentifiers(string $namespace = null, bool $restricted = true)
+    public function getFilteredOperationIdentifiers(string $namespace = null, bool $restricted = true)
     {
 
         /// Here we will return a list of operation identifiers that are either restricted or not
@@ -193,28 +193,92 @@ class Permissions
         $dotted_permissions = $this->dotArrayExceptLastArray($permissions_from_config);
         $permissions = array_keys($dotted_permissions);
 
-
         /// 3) Get all available operation identifiers for namespace we are working on
-        $operations = ResourceRepository::getOperationIdentifiers($namespace);
-
-
-
-
+        $operation_identifiers = ResourceRepository::getOperationIdentifiers($namespace);
 
         $restricted_operations = collect();
+        $unrestricted_operations = collect();
+
+        $partially_matching = [];
 
         if (!empty($permissions)) {
             foreach ($permissions as $permission) {
 
                 $wildcarded_permission = $permission . '*';
 
-                $restricted_operations = $restricted_operations->merge(
-                    $operations->filter(function ($identifier) use ($restricted, $wildcarded_permission) {
-                        $matches = fnmatch($wildcarded_permission, $identifier);
-                        return $matches;
-                    })
-                );
+                $rule = $dotted_permissions[$permission];
 
+                foreach($operation_identifiers as $identifier) {
+
+                    /// Is there an exact match?
+
+                    if($permission === $identifier) {
+
+                        /// Is the rule null - then the operation is considered to be unrestricted
+                        /// If the rule is an array, it is restricted
+
+                        if($rule === null) {
+                            $unrestricted_operations->push($identifier);
+                        } elseif(is_array($rule)) {
+                            $restricted_operations->push($identifier);
+                        } else {
+                            throw new \Exception("Operation $identifier has invalid permission rule, expected array or null.");
+                        }
+
+                    } else {
+
+                        /// It is not an exact match
+                        /// Look for a partial match
+
+                        $is_matching = fnmatch($wildcarded_permission, $identifier);
+
+                        if($is_matching) {
+
+                            if(!isset($partially_matching[$identifier])) {
+                                $partially_matching[$identifier] = [];
+                            }
+
+                            $partially_matching[$identifier][] = $permission;
+
+                        }
+
+                    }
+
+                }
+
+            }
+        }
+
+        if(!empty($partially_matching)) {
+            foreach($partially_matching as $identifier => $operation_matches) {
+
+                /// We are assuming that the best match is the longest string
+                $mapping = array_combine($operation_matches, array_map('strlen', $operation_matches));
+                $best_matching_permission = array_keys($mapping, max($mapping))[0];
+
+                $rule = $dotted_permissions[$best_matching_permission];
+
+                /// Is the rule null - then the operation is considered to be unrestricted
+                /// If the rule is an array, it is restricted
+
+                if($rule === null) {
+                    if(!$restricted_operations->contains($identifier)) {
+                        $unrestricted_operations->push($identifier);
+                    }
+                } elseif(is_array($rule)) {
+                    if(!$unrestricted_operations->contains($identifier)) {
+                        $restricted_operations->push($identifier);
+                    }
+                } else {
+                    throw new \Exception("Operation $identifier has invalid permission rule, expected array or null.");
+                }
+
+            }
+        }
+
+        foreach($operation_identifiers as $identifier) {
+            if(!$unrestricted_operations->contains($identifier) && !$restricted_operations->contains($identifier)) {
+                $unrestricted_operations->push($identifier);
             }
         }
 
@@ -222,7 +286,7 @@ class Permissions
             return $restricted_operations->unique()->sort()->values()->all();
         }
 
-        return $operations->diff($restricted_operations)->unique()->sort()->values()->all();
+        return $unrestricted_operations->unique()->sort()->values()->all();
     }
 
     public function findRolesForPermission($identifier)

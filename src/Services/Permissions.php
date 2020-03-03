@@ -183,27 +183,38 @@ class Permissions
     private function getFilteredOperationIdentifiers(string $namespace = null, bool $restricted = true)
     {
 
+        /// Here we will return a list of operation identifiers that are either restricted or not
+
+        /// 1) Get permissions config -> It configures which operations are restricted
         $permissions_from_config = config('permissions.permission_roles', []);
 
+
+        /// 2) Dot (collapse) permission config from a multidimensional array to dotted keys => values
         $dotted_permissions = $this->dotArrayExceptLastArray($permissions_from_config);
         $permissions = array_keys($dotted_permissions);
 
-        $wildcarded_permissions = array_map(function($permission) {
-            return $permission . '*';
-        }, $permissions);
 
+        /// 3) Get all available operation identifiers for namespace we are working on
         $operations = ResourceRepository::getOperationIdentifiers($namespace);
+
+
+
+
 
         $restricted_operations = collect();
 
-        if (!empty($wildcarded_permissions)) {
-            foreach ($wildcarded_permissions as $wildcarded_permission) {
+        if (!empty($permissions)) {
+            foreach ($permissions as $permission) {
+
+                $wildcarded_permission = $permission . '*';
+
                 $restricted_operations = $restricted_operations->merge(
                     $operations->filter(function ($identifier) use ($restricted, $wildcarded_permission) {
                         $matches = fnmatch($wildcarded_permission, $identifier);
                         return $matches;
                     })
                 );
+
             }
         }
 

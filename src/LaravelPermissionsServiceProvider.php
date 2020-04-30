@@ -2,9 +2,13 @@
 
 namespace MorningTrain\Laravel\Permissions;
 
-
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use MorningTrain\Laravel\Dev\Commands\System\Events\SystemBuilding;
+use MorningTrain\Laravel\Dev\Commands\System\Events\SystemRefreshing;
+use MorningTrain\Laravel\Dev\Commands\System\Events\SystemStartsBuilding;
 use MorningTrain\Laravel\Permissions\Console\RefreshPermissions;
 use MorningTrain\Laravel\Permissions\Console\RefreshRoles;
 use MorningTrain\Laravel\Resources\Support\Contracts\Operation;
@@ -45,6 +49,26 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
                 RefreshRoles::class,
                 RefreshPermissions::class,
             ]);
+
+            if(class_exists(SystemStartsBuilding::class)) {
+                Event::listen(SystemStartsBuilding::class, function () {
+                    Artisan::call('permission:cache-reset');
+                });
+            }
+
+            if(class_exists(SystemBuilding::class)) {
+                Event::listen([SystemRefreshing::class], function() {
+                    Artisan::call(RefreshPermissions::class);
+                });
+            }
+
+            if(class_exists(SystemRefreshing::class)) {
+                Event::listen([SystemRefreshing::class], function() {
+                    Artisan::call('permission:cache-reset');
+                    Artisan::call(RefreshPermissions::class);
+                });
+            }
+
         }
 
         // Implicitly grant "admin" role all permissions

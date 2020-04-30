@@ -57,7 +57,7 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
             }
 
             if(class_exists(SystemBuilding::class)) {
-                Event::listen([SystemRefreshing::class], function() {
+                Event::listen([SystemBuilding::class], function() {
                     Artisan::call(RefreshPermissions::class);
                 });
             }

@@ -51,21 +51,27 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
             ]);
 
             if(class_exists(SystemStartsBuilding::class)) {
-                Event::listen(SystemStartsBuilding::class, function () {
-                    Artisan::call('permission:cache-reset');
+                Event::listen(SystemStartsBuilding::class, function (SystemStartsBuilding $event) {
+                    if(isset($event->command)) {
+                        $event->command->call('permission:cache-reset');
+                    }
                 });
             }
 
             if(class_exists(SystemBuilding::class)) {
-                Event::listen([SystemBuilding::class], function() {
-                    Artisan::call(RefreshPermissions::class);
+                Event::listen([SystemBuilding::class], function(SystemBuilding $event) {
+                    if(isset($event->command)) {
+                        $event->command->call(RefreshPermissions::class);
+                    }
                 });
             }
 
             if(class_exists(SystemRefreshing::class)) {
-                Event::listen([SystemRefreshing::class], function() {
-                    Artisan::call('permission:cache-reset');
-                    Artisan::call(RefreshPermissions::class);
+                Event::listen([SystemRefreshing::class], function(SystemRefreshing $event) {
+                    if(isset($event->command)) {
+                        $event->command->call('permission:cache-reset');
+                        $event->command->call(RefreshPermissions::class);
+                    }
                 });
             }
 

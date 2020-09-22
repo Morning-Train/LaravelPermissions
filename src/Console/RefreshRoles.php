@@ -12,6 +12,7 @@ class RefreshRoles extends Command
     protected $name        = 'mt:refresh-roles';
     protected $description = 'Refreshes roles';
     protected $target;
+    protected $merge_roles;
 
     public function handle()
     {
@@ -19,7 +20,11 @@ class RefreshRoles extends Command
 
         $this->target = config('permissions.roles', []);
 
-        $this->deleteDeprecated();
+        $this->merge_roles = config('permissions.merge_roles', false);
+
+        if($this->merge_roles === false) {
+            $this->deleteDeprecated();
+        }
 
         $this->refreshPermissions();
 

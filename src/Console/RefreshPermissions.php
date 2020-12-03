@@ -86,13 +86,13 @@ class RefreshPermissions extends Command
     {
         $this->info('Syncing permission groups.');
 
-        $groups = config('permissions.groups', []);
+        $groups_from_config = config('permissions.groups', []);
 
-        if(empty($groups) || !is_array($groups)) {
+        if(empty($groups_from_config) || !is_array($groups_from_config)) {
             return;
         }
 
-        $group_identifiers = array_keys($groups);
+        $group_identifiers = array_keys($groups_from_config);
 
         PermissionGroup::syncGroups($group_identifiers);
 
@@ -100,7 +100,7 @@ class RefreshPermissions extends Command
 
         foreach($group_identifiers as $group_identifier) {
 
-            $group_permissions = $groups[$group_identifier];
+            $group_permissions = $groups_from_config[$group_identifier];
             $group = $groups->get($group_identifier);
 
             if (!$group) {

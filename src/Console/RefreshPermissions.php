@@ -26,7 +26,8 @@ class RefreshPermissions extends Command
         // All permissions which need to be created
         $this->target = array_unique(array_merge(
             array_keys(config('permissions.custom_permission_roles', [])),
-            Permissions::getRestrictedOperationIdentifiers()
+            Permissions::getRestrictedOperationIdentifiers(),
+            Arr::flatten(config('permissions.groups', [])),
         ));
 
         $this->deleteDeprecated();
@@ -101,6 +102,16 @@ class RefreshPermissions extends Command
 
             $group_permissions = $groups[$group_identifier];
             $group = $groups->get($group_identifier);
+
+            if (!$group) {
+                continue;
+            }
+
+            $group_roles = config('permissions.group_roles.' . $group->slug, []);
+
+            if(!empty($group_roles) && is_array($group_roles)) {
+                $group->syncRoles($group_roles);
+            }
 
             $group->syncPermissions($group_permissions);
 

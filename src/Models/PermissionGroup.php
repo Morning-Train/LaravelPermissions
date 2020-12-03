@@ -12,6 +12,15 @@ class PermissionGroup extends Model
     use HasPermissions;
     use HasRoles;
 
+    protected $fillable = ['guard_name'];
+
+    public function __construct(array $attributes = [])
+    {
+        $attributes['guard_name'] = $attributes['guard_name'] ?? config('auth.defaults.guard');
+
+        parent::__construct($attributes);
+    }
+
     public static function syncRolePermissions()
     {
 
@@ -75,7 +84,10 @@ class PermissionGroup extends Model
 
         }
 
-        $existing->delete();
+        if($existing->isNotEmpty()) {
+            PermissionGroup::query()->whereIn('slug', $existing->keys())->delete();
+        }
+
     }
 
 

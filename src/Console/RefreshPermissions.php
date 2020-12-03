@@ -6,6 +6,7 @@ namespace MorningTrain\Laravel\Permissions\Console;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use MorningTrain\Laravel\Permissions\Models\PermissionGroup;
 use MorningTrain\Laravel\Permissions\Permissions;
 use MorningTrain\Laravel\Resources\ResourceRepository;
 use Spatie\Permission\Models\Permission;
@@ -32,6 +33,7 @@ class RefreshPermissions extends Command
 
         $this->refreshPermissions();
         $this->syncRoles();
+        $this->syncGroups();
 
         $this->info('Done refreshing permissions.');
     }
@@ -77,6 +79,35 @@ class RefreshPermissions extends Command
             $roles = Permissions::findRolesForPermission($permission->name);
             $permission->syncRoles($roles);
         });
+    }
+
+    protected function syncGroups()
+    {
+        $this->info('Syncing permission groups.');
+
+        $groups = config('permissions.groups', []);
+
+        if(empty($groups) || !is_array($groups)) {
+            return;
+        }
+
+        $group_identifiers = array_keys($groups);
+
+        PermissionGroup::syncGroups($group_identifiers);
+
+        $groups = PermissionGroup::query()->get()->keyBy('slug');
+
+        foreach($group_identifiers as $group_identifier) {
+
+            $group_permissions = $groups[$group_identifier];
+            $group = $groups->get($group_identifier);
+
+            $group->syncPermissions($group_permissions);
+
+        }
+
+        PermissionGroup::syncRolePermissions();
+
     }
 
 }

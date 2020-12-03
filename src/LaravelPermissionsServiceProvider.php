@@ -45,6 +45,10 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
                 __DIR__ . '/../config/permissions.php' => config_path('permissions.php'),
             ], 'mt-config');
 
+            $this->publishes([
+                __DIR__ . '/../database/migrations/2020_12_03_000001_create_permissions_group_table.php' => database_path('migrations/2020_12_03_000001_create_permissions_group_table.php'),
+            ], 'permissions-group');
+
             $this->commands([
                 RefreshRoles::class,
                 RefreshPermissions::class,

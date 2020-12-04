@@ -87,7 +87,7 @@ class PermissionGroup extends Model
     {
 
         $groups = static::query()
-            ->with('roles')
+            ->with('users')
             ->with('permissions')
             ->get();
 
@@ -178,6 +178,16 @@ class PermissionGroup extends Model
             PermissionGroup::query()->whereIn('slug', $existing->keys())->delete();
         }
 
+    }
+
+    public function getListOfRolesAttribute()
+    {
+        return $this->roles->pluck('name');
+    }
+
+    public function getListOfUsersAttribute()
+    {
+        return $this->users->pluck('id');
     }
 
 

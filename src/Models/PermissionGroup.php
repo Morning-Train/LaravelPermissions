@@ -3,6 +3,7 @@
 namespace MorningTrain\Laravel\Permissions\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -68,6 +69,13 @@ class PermissionGroup extends Model
             }
         }
 
+        $other_roles = Role::query()->whereNotIn('id', array_keys($role_permissions_map))->get();
+
+        if($other_roles->isNotEmpty()) {
+            foreach($other_roles as $other_role) {
+                $other_role->syncPermissions([]);
+            }
+        }
     }
 
     public static function syncGroups($group_identifiers)

@@ -186,8 +186,10 @@ class Permissions
         /// Here we will return a list of operation identifiers that are either restricted or not
 
         /// 1) Get permissions config -> It configures which operations are restricted
-        $permissions_from_config = config('permissions.permission_roles', []);
-
+        $permissions_from_config = array_unique(array_merge(
+            array_keys(config('permissions.custom_permission_roles', [])),
+            Arr::flatten(config('permissions.groups', [])),
+        ));
 
         /// 2) Dot (collapse) permission config from a multidimensional array to dotted keys => values
         $dotted_permissions = $this->dotArrayExceptLastArray($permissions_from_config);

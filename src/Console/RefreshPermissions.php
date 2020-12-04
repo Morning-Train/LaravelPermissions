@@ -6,6 +6,7 @@ namespace MorningTrain\Laravel\Permissions\Console;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use MorningTrain\Laravel\Permissions\Jobs\SyncRolePermissionsFromPermissionGroups;
 use MorningTrain\Laravel\Permissions\Models\PermissionGroup;
 use MorningTrain\Laravel\Permissions\Permissions;
 use MorningTrain\Laravel\Resources\ResourceRepository;
@@ -118,7 +119,7 @@ class RefreshPermissions extends Command
 
         }
 
-        PermissionGroup::syncRolePermissions();
+        SyncRolePermissionsFromPermissionGroups::dispatchNow();
 
     }
 

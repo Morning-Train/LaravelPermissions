@@ -27,6 +27,7 @@ class RefreshPermissions extends Command
         $this->target = array_unique(array_merge(
             array_keys(config('permissions.custom_permission_roles', [])),
             Permissions::getRestrictedOperationIdentifiers(),
+            array_keys(config('permissions.groups', [])),
             Arr::flatten(config('permissions.groups', [])),
         ));
 

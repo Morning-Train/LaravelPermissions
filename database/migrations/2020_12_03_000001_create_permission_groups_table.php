@@ -18,6 +18,8 @@ class CreatePermissionGroupsTable extends Migration
             $table->timestamps();
             $table->string('slug')->nullable();
             $table->string('guard_name');
+            $table->string('category');
+            $table->integer('sort_index');
         });
     }
 

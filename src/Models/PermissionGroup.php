@@ -47,7 +47,11 @@ class PermissionGroup extends Model
 
                         $existing_role_permissions = data_get($role_permissions_map, $role_id, []);
 
-                        $merged_role_permissions = array_unique(array_merge($existing_role_permissions, $simplified_group_permissions));
+                        $merged_role_permissions = array_unique(array_merge(
+                            [$group->slug],
+                            $existing_role_permissions,
+                            $simplified_group_permissions
+                        ));
 
                         data_set($role_permissions_map, $role_id, $merged_role_permissions);
 
@@ -71,17 +75,33 @@ class PermissionGroup extends Model
 
         $existing = static::query()->get()->keyBy('slug');
 
-        while(!empty($group_identifiers)) {
-            $group_identifier = array_pop($group_identifiers);
+        $sort_index = 0;
 
-            if($existing->has($group_identifier)) {
-                $existing->forget($group_identifier);
-            } else {
-                $group = new PermissionGroup();
-                $group->slug = $group_identifier;
+        $group_identifiers_collection = collect($group_identifiers);
+
+        $group_identifiers_collection = $group_identifiers_collection->groupBy(function($group_identifier) {
+            $identifier_fragments = explode('.', $group_identifier);
+            return array_shift($identifier_fragments);
+        });
+
+        foreach($group_identifiers_collection->toArray() as $group_category => $group_identifiers) {
+            while(!empty($group_identifiers)) {
+                $group_identifier = array_shift($group_identifiers);
+
+                if($existing->has($group_identifier)) {
+                    $group = $existing->get($group_identifier);
+                    $existing->forget($group_identifier);
+                } else {
+                    $group = new PermissionGroup();
+                    $group->slug = $group_identifier;
+                }
+
+                $group->sort_index =  $sort_index;
+                $group->category = $group_category;
                 $group->save();
-            }
 
+                $sort_index++;
+            }
         }
 
         if($existing->isNotEmpty()) {

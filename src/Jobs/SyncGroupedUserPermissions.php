@@ -9,7 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use MorningTrain\Laravel\Permissions\Models\PermissionGroup;
 
-class SyncGroupedPermissions implements ShouldQueue
+class SyncGroupedUserPermissions implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -30,8 +30,7 @@ class SyncGroupedPermissions implements ShouldQueue
      */
     public function handle()
     {
-        SyncGroupedRolePermissions::dispatchNow();
-        SyncGroupedUserPermissions::dispatchNow();
+        PermissionGroup::syncUserPermissions();
     }
 
     /**

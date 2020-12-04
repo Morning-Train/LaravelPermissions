@@ -131,7 +131,7 @@ class PermissionGroup extends Model
         }
 
         $user_class = config('permission.model.user', 'App\Models\User');
-        $other_users = call_user_func($user_class, '::query')->whereNotIn('id', array_keys($user_permissions_map))->get();
+        $other_users = call_user_func($user_class . '::query')->whereNotIn('id', array_keys($user_permissions_map))->get();
 
         if($other_users->isNotEmpty()) {
             foreach($other_users as $other_user) {

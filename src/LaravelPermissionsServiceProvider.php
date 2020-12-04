@@ -47,6 +47,7 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
 
             $this->publishes([
                 __DIR__ . '/../database/migrations/2020_12_03_000001_create_permission_groups_table.php' => database_path('migrations/2020_12_03_000001_create_permission_groups_table.php'),
+                __DIR__ . '/../database/migrations/2020_12_04_000001_create_permission_group_user_table.php' => database_path('migrations/2020_12_04_000001_create_permission_group_user_table.php'),
             ], 'permissions-group');
 
             $this->commands([

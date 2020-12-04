@@ -22,6 +22,11 @@ class PermissionGroup extends Model
         parent::__construct($attributes);
     }
 
+    public function users()
+    {
+        return $this->belongsToMany(config('permission.model.user', 'App\Models\User'));
+    }
+
     public static function syncRolePermissions()
     {
 
@@ -74,6 +79,63 @@ class PermissionGroup extends Model
         if($other_roles->isNotEmpty()) {
             foreach($other_roles as $other_role) {
                 $other_role->syncPermissions([]);
+            }
+        }
+    }
+
+    public static function syncUserPermissions()
+    {
+
+        $groups = static::query()
+            ->with('roles')
+            ->with('permissions')
+            ->get();
+
+        $user_permissions_map = [];
+        $users_map = [];
+
+        if($groups->isNotEmpty()) {
+            foreach($groups as $group) {
+
+                $group_users = $group->users;
+
+                $simplified_group_permissions = $group->permissions->pluck('name')->all();
+
+                if($group_users->isNotEmpty()) {
+                    foreach ($group_users as $group_user) {
+
+                        $user_id = $group_user->id;
+                        data_set($users_map, $user_id, $group_user);
+
+                        $existing_user_permissions = data_get($user_permissions_map, $user_id, []);
+
+                        $merged_user_permissions = array_unique(array_merge(
+                            [$group->slug],
+                            $existing_user_permissions,
+                            $simplified_group_permissions
+                        ));
+
+                        data_set($user_permissions_map, $user_id, $merged_user_permissions);
+
+                    }
+                }
+
+            }
+        }
+
+        if(!empty($users_map)) {
+            foreach($users_map as $user) {
+                $user_permissions = data_get($user_permissions_map, $user->id);
+                $user->syncPermissions($user_permissions);
+            }
+        }
+
+        $user_class = config('permission.model.user', 'App\Models\User');
+        $other_users = call_user_func($user_class, '::query')->whereNotIn('id', array_keys($user_permissions_map))->get();
+
+        if($other_users->isNotEmpty()) {
+            foreach($other_users as $other_user) {
+                $other_user->syncPermissions([]);
             }
         }
     }

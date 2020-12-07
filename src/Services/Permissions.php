@@ -180,16 +180,40 @@ class Permissions
         return $wildcarded_permissions;
     }
 
+    public function getMappedPermissionsFromGroups()
+    {
+        $permissions = config('permissions.groups', []);
+        $group_rules = $this->dotArrayExceptLastArray(config('permissions.group_roles', []));
+
+        if(!is_array($group_rules) || empty($group_rules) || !is_array($permissions) || empty($permissions)) {
+            return [];
+        }
+
+        $mapped_permissions = [];
+
+        foreach($group_rules as $group_permission => $group_rule) {
+            if(isset($permissions[$group_permission])) {
+                foreach ($permissions[$group_permission] as $permission) {
+                    $mapped_permissions[$permission] = $group_rule;
+                }
+                $mapped_permissions[$group_permission] = $group_rule;
+            }
+        }
+
+        return $mapped_permissions;
+    }
+
     public function getFilteredOperationIdentifiers(string $namespace = null, bool $restricted = true)
     {
 
         /// Here we will return a list of operation identifiers that are either restricted or not
 
         /// 1) Get permissions config -> It configures which operations are restricted
-        $permissions_from_config = array_unique(array_merge(
-            array_keys(config('permissions.custom_permission_roles', [])),
-            Arr::flatten(config('permissions.groups', [])),
-        ));
+        $permissions_from_config = array_merge_recursive(
+            config('permissions.permission_roles', []),
+            config('permissions.custom_permission_roles', []),
+            $this->getMappedPermissionsFromGroups(),
+        );
 
         /// 2) Dot (collapse) permission config from a multidimensional array to dotted keys => values
         $dotted_permissions = $this->dotArrayExceptLastArray($permissions_from_config);
@@ -296,7 +320,8 @@ class Permissions
 
         $permissions_from_config = array_merge_recursive(
             config('permissions.permission_roles', []),
-            config('permissions.custom_permission_roles', [])
+            config('permissions.custom_permission_roles', []),
+            config('permissions.group_roles', []),
         );
 
         $dotted_permissions = $this->dotArrayExceptLastArray($permissions_from_config);

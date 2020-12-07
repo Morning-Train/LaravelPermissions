@@ -180,7 +180,7 @@ class Permissions
         return $wildcarded_permissions;
     }
 
-    public function getMappedPermissionsFromGroups()
+    public function getMappedPermissionsFromGroups($group_name = null)
     {
         $permissions = config('permissions.groups', []);
         $group_rules = $this->dotArrayExceptLastArray(config('permissions.group_roles', []));
@@ -192,6 +192,9 @@ class Permissions
         $mapped_permissions = [];
 
         foreach($group_rules as $group_permission => $group_rule) {
+            if($group_name !== null && $group_name !== $group_permission) {
+                continue;
+            }
             if(isset($permissions[$group_permission])) {
                 foreach ($permissions[$group_permission] as $permission) {
                     $mapped_permissions[$permission] = $group_rule;
@@ -203,23 +206,27 @@ class Permissions
         return $mapped_permissions;
     }
 
-    public function getFilteredOperationIdentifiers(string $namespace = null, bool $restricted = true)
+    public function getFilteredOperationIdentifiersFromPermissionGroup(string $group_name = null, bool $restricted = true)
     {
 
         /// Here we will return a list of operation identifiers that are either restricted or not
 
         /// 1) Get permissions config -> It configures which operations are restricted
         $permissions_from_config = array_merge_recursive(
-            config('permissions.permission_roles', []),
-            config('permissions.custom_permission_roles', []),
-            $this->getMappedPermissionsFromGroups(),
+            $this->getMappedPermissionsFromGroups($group_name),
         );
 
         /// 2) Dot (collapse) permission config from a multidimensional array to dotted keys => values
         $dotted_permissions = $this->dotArrayExceptLastArray($permissions_from_config);
-        $permissions = array_keys($dotted_permissions);
 
         /// 3) Get all available operation identifiers for namespace we are working on
+        return $this->filterOperationIdentifiers($dotted_permissions, null, $restricted);
+    }
+
+    public function filterOperationIdentifiers($dotted_permissions, $namespace = null, $restricted = true)
+    {
+        $permissions = array_keys($dotted_permissions);
+
         $operation_identifiers = ResourceRepository::getOperationIdentifiers($namespace);
 
         $restricted_operations = collect();
@@ -313,6 +320,25 @@ class Permissions
         }
 
         return $unrestricted_operations->unique()->sort()->values()->all();
+    }
+
+    public function getFilteredOperationIdentifiers(string $namespace = null, bool $restricted = true)
+    {
+
+        /// Here we will return a list of operation identifiers that are either restricted or not
+
+        /// 1) Get permissions config -> It configures which operations are restricted
+        $permissions_from_config = array_merge_recursive(
+            config('permissions.permission_roles', []),
+            config('permissions.custom_permission_roles', []),
+            $this->getMappedPermissionsFromGroups(),
+        );
+
+        /// 2) Dot (collapse) permission config from a multidimensional array to dotted keys => values
+        $dotted_permissions = $this->dotArrayExceptLastArray($permissions_from_config);
+
+        /// 3) Get all available operation identifiers for namespace we are working on
+        return $this->filterOperationIdentifiers($dotted_permissions, $namespace, $restricted);
     }
 
     public function findRolesForPermission($identifier)

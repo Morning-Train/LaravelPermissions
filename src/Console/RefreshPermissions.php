@@ -29,7 +29,6 @@ class RefreshPermissions extends Command
             array_keys(config('permissions.custom_permission_roles', [])),
             Permissions::getRestrictedOperationIdentifiers(),
             array_keys(config('permissions.groups', [])),
-            Arr::flatten(config('permissions.groups', [])),
         ));
 
         $this->deleteDeprecated();
@@ -102,7 +101,7 @@ class RefreshPermissions extends Command
 
         foreach($group_identifiers as $group_identifier) {
 
-            $group_permissions = $groups_from_config[$group_identifier];
+            $group_permissions = Permissions::getFilteredOperationIdentifiersFromPermissionGroup($group_identifier);
             $group = $groups->get($group_identifier);
 
             if (!$group) {

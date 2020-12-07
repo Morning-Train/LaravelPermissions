@@ -5,6 +5,7 @@ namespace MorningTrain\Laravel\Permissions\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use MorningTrain\Laravel\Permissions\Jobs\SyncGroupedPermissions;
 use MorningTrain\Laravel\Permissions\Models\PermissionGroup;
@@ -85,6 +86,11 @@ class RefreshPermissions extends Command
 
     protected function syncGroups()
     {
+
+        if(!Schema::hasTable('permission_groups')) {
+            return;
+        }
+
         $this->info('Syncing permission groups.');
 
         $groups_from_config = config('permissions.groups', []);

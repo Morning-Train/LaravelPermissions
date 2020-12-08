@@ -105,6 +105,8 @@ class RefreshPermissions extends Command
 
         $groups = PermissionGroup::query()->get()->keyBy('slug');
 
+        $all_group_roles = Permissions::dotArrayExceptLastArray(config('permissions.group_roles', []));
+
         foreach($group_identifiers as $group_identifier) {
 
             $group_permissions = Permissions::getFilteredOperationIdentifiersFromPermissionGroup($group_identifier);
@@ -114,7 +116,7 @@ class RefreshPermissions extends Command
                 continue;
             }
 
-            $group_roles = config('permissions.group_roles.' . $group->slug, []);
+            $group_roles = isset($all_group_roles[$group->slug]) ? $all_group_roles[$group->slug] : [];
 
             if(!empty($group_roles) && is_array($group_roles)) {
                 $group->syncRoles($group_roles);

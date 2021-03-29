@@ -207,14 +207,14 @@ class PermissionGroup extends Model
         $group->category = $group_category;
         $group->save();
 
-        $merged_role_permissions = array_unique(
+        $new_permissions = array_unique(
             array_merge(
                 [$group->slug],
                 $permissions
             )
         );
 
-        foreach ($merged_role_permissions as $permission_slug) {
+        foreach ($new_permissions as $permission_slug) {
             Permission::findOrCreate($permission_slug);
         }
 
@@ -222,6 +222,14 @@ class PermissionGroup extends Model
 
         if($roles->isNotEmpty()) {
             foreach($roles as $role) {
+
+                $merged_role_permissions = array_unique(
+                    array_merge(
+                        $new_permissions,
+                        $role->permissions()->pluck('name')->toArray(),
+                    )
+                );
+
                 $role->syncPermissions($merged_role_permissions);
             }
         }

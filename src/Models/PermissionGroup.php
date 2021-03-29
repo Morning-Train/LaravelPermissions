@@ -3,6 +3,7 @@
 namespace MorningTrain\Laravel\Permissions\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
@@ -188,6 +189,43 @@ class PermissionGroup extends Model
     public function getListOfUsersAttribute()
     {
         return $this->users->pluck('id');
+    }
+
+    public static function migrate($slug, $permissions, $role_names)
+    {
+
+
+        $identifier_fragments = explode('.', $slug);
+        $group_category = array_shift($identifier_fragments);
+
+        $group = PermissionGroup::whereSlug($slug)->first();
+        if ($group === null) {
+            $group = new PermissionGroup();
+            $group->slug = $slug;
+        }
+
+        $group->category = $group_category;
+        $group->save();
+
+        $merged_role_permissions = array_unique(
+            array_merge(
+                [$group->slug],
+                $permissions
+            )
+        );
+
+        foreach ($merged_role_permissions as $permission_slug) {
+            Permission::findOrCreate($permission_slug);
+        }
+
+        $roles = Role::query()->whereIn('name', $role_names)->get();
+
+        if($roles->isNotEmpty()) {
+            foreach($roles as $role) {
+                $role->syncPermissions($merged_role_permissions);
+            }
+        }
+
     }
 
 

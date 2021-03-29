@@ -66,7 +66,9 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
             if(class_exists(SystemBuilding::class)) {
                 Event::listen([SystemBuilding::class], function(SystemBuilding $event) {
                     if(isset($event->command)) {
-                        $event->command->call(RefreshPermissions::class);
+                        if(app()->environment() !== 'production' || config('dev-commands.system.build.refresh-permissions-in-production', false)) {
+                            $event->command->call(RefreshPermissions::class);
+                        }
                     }
                 });
             }
@@ -75,7 +77,9 @@ class LaravelPermissionsServiceProvider extends ServiceProvider
                 Event::listen([SystemRefreshing::class], function(SystemRefreshing $event) {
                     if(isset($event->command)) {
                         $event->command->call('permission:cache-reset');
-                        $event->command->call(RefreshPermissions::class);
+                        if(app()->environment() !== 'production' || config('dev-commands.system.refresh.refresh-permissions-in-production', false)) {
+                            $event->command->call(RefreshPermissions::class);
+                        }
                     }
                 });
             }

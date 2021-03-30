@@ -218,10 +218,14 @@ class PermissionGroup extends Model
             Permission::findOrCreate($permission_slug);
         }
 
+        $group->syncPermissions($permissions);
+
         $roles = Role::query()->whereIn('name', $role_names)->get();
 
         if($roles->isNotEmpty()) {
             foreach($roles as $role) {
+
+                $group->syncRoles($roles);
 
                 $merged_role_permissions = array_unique(
                     array_merge(

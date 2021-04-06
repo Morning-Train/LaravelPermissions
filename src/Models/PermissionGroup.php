@@ -240,5 +240,55 @@ class PermissionGroup extends Model
 
     }
 
+    public static function migrateRemove($slug, $permissions, $role_names)
+    {
+        $group = PermissionGroup::whereSlug($slug)->first();
 
+        $permissions_to_remove = collect($permissions);
+
+        $group->revokePermissionTo($permissions_to_remove);
+
+        $roles = \App\Models\Role::query()->whereIn('name', $role_names)->get();
+
+        $roles->each(
+            function ($role) use ($permissions_to_remove, $slug) {
+                $allPermissions = $role->permissions()->pluck('name');
+
+                $permissions_to_keep = $allPermissions
+                    ->reject(
+                        function ($permissionName) use ($permissions_to_remove, $role, $slug) {
+                            $shouldBeRemoved = $permissions_to_remove->contains($permissionName);
+
+                            if (!$shouldBeRemoved) {
+                                return false;
+                            }
+
+                            $permission = Permission::findByName($permissionName);
+
+                            $roleHasGroupWithPermission = $role->permissionGroups()
+                                ->where('slug', '!=', $slug)
+                                ->whereHas(
+                                    'permissions',
+                                    function (Builder $q) use ($permission) {
+                                        $q->where(
+                                            config('permission.table_names.permissions') . '.id',
+                                            $permission->getKey()
+                                        );
+                                    }
+                                )
+                                ->exists();
+
+                            return !$roleHasGroupWithPermission;
+                        }
+                    )
+                    ->toArray();
+
+                if (count($permissions_to_keep) === $allPermissions->count()) {
+                    return;
+                }
+
+                $role->syncPermissions($permissions_to_keep);
+            }
+        );
+    }
 }

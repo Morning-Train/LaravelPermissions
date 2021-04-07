@@ -269,7 +269,7 @@ class PermissionGroup extends Model
                                 ->where('slug', '!=', $slug)
                                 ->whereHas(
                                     'permissions',
-                                    function (Builder $q) use ($permission) {
+                                    function ($q) use ($permission) {
                                         $q->where(
                                             config('permission.table_names.permissions') . '.id',
                                             $permission->getKey()

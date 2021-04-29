@@ -25,7 +25,7 @@ class PermissionRegistrar extends SpatiePermissionRegistrar
                 if ($user === null && Permissions::isRestricted($ability)) {
                     return false;
                 }
-                else if (method_exists($user, 'hasPermissionTo')) {
+                else if ($user !== null && method_exists($user, 'hasPermissionTo')) {
                     return $user->hasPermissionTo($ability) ? null : false;
                 }
             } catch (PermissionDoesNotExist $e) {
@@ -49,7 +49,7 @@ class PermissionRegistrar extends SpatiePermissionRegistrar
                     if ($user === null && $result === null) {
                         return true;
                     }
-                    else if (method_exists($user, 'hasPermissionTo')) {
+                    else if ($user !== null && method_exists($user, 'hasPermissionTo')) {
                         $result = $user->hasPermissionTo($ability);
                     }
                 } catch (PermissionDoesNotExist $e) {

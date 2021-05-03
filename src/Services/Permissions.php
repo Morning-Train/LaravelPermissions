@@ -45,6 +45,13 @@ class Permissions
                 $user->getAllPermissions()
                     ->pluck('name')
                     ->reject(function ($permission) use ($user, $params) {
+
+                        $should_check = config('permissions.can_check_when_exporting_user_permissions', true);
+
+                        if(!$should_check) {
+                            return false;
+                        }
+
                         $param = $params->get($permission);
 
                         return $param !== null ?

@@ -201,6 +201,7 @@ class PermissionGroup extends Model
         $group = PermissionGroup::whereSlug($slug)->first();
         if ($group === null) {
             $group = new PermissionGroup();
+            $group->sort_index = 0;
             $group->slug = $slug;
         }
 

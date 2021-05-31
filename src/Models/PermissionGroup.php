@@ -247,7 +247,9 @@ class PermissionGroup extends Model
 
         $permissions_to_remove = collect($permissions);
 
-        $group->revokePermissionTo($permissions_to_remove);
+        if($group) {
+            $group->revokePermissionTo($permissions_to_remove);
+        }
 
         $roles = \App\Models\Role::query()->whereIn('name', $role_names)->get();
 

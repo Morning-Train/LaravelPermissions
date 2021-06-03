@@ -236,6 +236,14 @@ class Permissions
 
         $operation_identifiers = ResourceRepository::getOperationIdentifiers($namespace);
 
+        $extra = array_keys(config('permissions.custom_permission_roles', []));
+
+        if(!empty($extra)) {
+            foreach ($extra as $item) {
+                $operation_identifiers->push($item);
+            }
+        }
+
         $restricted_operations = collect();
         $unrestricted_operations = collect();
 

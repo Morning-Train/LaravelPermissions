@@ -59,7 +59,22 @@ class Permissions
                             !$user->can($permission);
                     })
                     ->all(),
-                $this->getUnrestrictedOperationIdentifiers()
+                collect($this->getUnrestrictedOperationIdentifiers())
+                    ->reject(function ($permission) use ($user, $params) {
+
+                        $should_check = config('permissions.can_check_on_unrestricted_when_exporting_user_permissions', false);
+
+                        if(!$should_check) {
+                            return false;
+                        }
+
+                        $param = $params->get($permission);
+
+                        return $param !== null ?
+                            !$user->can($permission, $param) :
+                            !$user->can($permission);
+                    })
+                    ->all(),
             );
     }
 

@@ -13,6 +13,7 @@ return [
 
     'merge_permissions' => false,
     'can_check_when_exporting_user_permissions' => true,
+    'can_check_on_unrestricted_when_exporting_user_permissions' => false,
 
     /*
     |--------------------------------------------------------------------------

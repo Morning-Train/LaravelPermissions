@@ -10,10 +10,10 @@ use Spatie\Permission\PermissionServiceProvider as SpatiePermissionProvider;
 
 class PermissionServiceProvider extends SpatiePermissionProvider
 {
-    public function boot(SpatiePermissionRegistrar $permissionLoader, Filesystem $filesystem)
+    public function boot(SpatiePermissionRegistrar $permissionLoader)
     {
         // Here we "hack" our way into overriding the Spatie PermissionRegistrar
-        parent::boot(app()->make(PermissionRegistrar::class), $filesystem);
+        parent::boot(app()->make(PermissionRegistrar::class));
     }
 
 }

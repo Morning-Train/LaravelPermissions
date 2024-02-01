@@ -374,6 +374,9 @@ class Permissions
     public function findRolesForPermission($identifier)
     {
 
+        $rolePermissions = config('permissions.role_permissions', []);
+        $dotted_role_permissions = $this->dotArrayExceptLastArray($rolePermissions);
+
         $permissions_from_config = array_merge_recursive(
             config('permissions.permission_roles', []),
             config('permissions.custom_permission_roles', []),
@@ -387,16 +390,37 @@ class Permissions
             return [];
         }
 
+        $rolesForPermission = [];
+
         foreach($dotted_permissions as $key => $roles) {
             $pattern = $key.'*';
 
             if(fnmatch($pattern, $identifier)) {
-                return $roles;
+                $rolesForPermission = $roles;
+                break;
             }
 
         }
 
-        return [];
+        if(is_array($dotted_role_permissions) && !empty($dotted_role_permissions)) {
+            foreach ($dotted_role_permissions as $role => $permissionsForRole) {
+
+                /// Skip if the role has already been added
+                if(in_array($role, $rolesForPermission)) {
+                    continue;
+                }
+
+                foreach ($permissionsForRole as $permission) {
+                    $pattern = $permission.'*';
+                    if(fnmatch($pattern, $identifier)) {
+                        $rolesForPermission[] = $role;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $rolesForPermission;
     }
 
 }

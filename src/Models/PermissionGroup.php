@@ -76,9 +76,13 @@ class PermissionGroup extends Model
         }
 
         $other_roles = Role::query()->whereNotIn('id', array_keys($role_permissions_map))->get();
+        $rolePermissions = config('permissions.role_permissions', []);
 
         if($other_roles->isNotEmpty()) {
             foreach($other_roles as $other_role) {
+                if(!empty($rolePermissions) && isset($rolePermissions[$other_role->name])) {
+                    continue;
+                }
                 $other_role->syncPermissions([]);
             }
         }
